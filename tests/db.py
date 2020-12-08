@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.engine import Engine
 
 
@@ -22,6 +22,5 @@ def override_get_engine():
     return engine
 
 
-def override_db_dependencies(app: FastAPI, db: Session, engine: Engine):
-    app.dependency_overrides[db] = override_get_db
+def override_db_dependencies(app: FastAPI, engine: Engine):
     app.dependency_overrides[engine] = override_get_engine

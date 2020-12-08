@@ -43,7 +43,7 @@ class OpenRateBasedRecommender(object):
     """
 
     def _query(self):
-        return text(self._sql).bindparams(user_id=self.instance_id)
+        return text(self._sql).bindparams(instance_id=self.instance_id)
 
     def rated_articles(self, engine: Engine):
         df = pd.read_sql(sql=self._query(), con=engine)
