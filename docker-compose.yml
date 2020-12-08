@@ -1,0 +1,15 @@
+version: '3.1'
+
+services:
+
+  recommender-service:
+    build: .
+    ports:
+      - 8080:8080
+    volumes:
+      - .:/srv/recommender-service
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8080 --reload
+    env_file:
+      - .env
+    tty: true
+    restart: always
