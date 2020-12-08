@@ -21,7 +21,8 @@ class BaseConfig(BaseSettings):
 
 
 class DevelopmentConfig(BaseConfig):
-    DB_URI: AnyUrl = os.getenv('CONTENT_MANAGER_DB_URI')
+    DB_URI: AnyUrl = os.getenv('CONTENT_MANAGER_DB_URI',
+                               'mysql://user:password@mysql:3306/content_manager')
 
     SECRET_KEY: str = 'dev'
     DEBUG: bool = True
@@ -29,7 +30,8 @@ class DevelopmentConfig(BaseConfig):
 
 
 class ProductionConfig(BaseConfig):
-    DB_URI: AnyUrl = os.getenv('CONTENT_MANAGER_DB_URI')
+    DB_URI: AnyUrl = os.getenv('CONTENT_MANAGER_DB_URI',
+                               'mysql://user:password@mysql:3306/content_manager')
 
     def random_string(stringLength=10):
         """Generate a random string of fixed length """
