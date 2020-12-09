@@ -16,4 +16,4 @@ class Article(BaseModel):
     updated_at: datetime
     status: str
     is_opened: bool
-    rating: float
+    metric: float
