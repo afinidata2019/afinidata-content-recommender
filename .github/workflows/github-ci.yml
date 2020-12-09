@@ -82,9 +82,10 @@ jobs:
       - name: Logging into remote server, deploying latest images
         uses: appleboy/ssh-action@master
         env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: afinidata-recommender-service
-          IMAGE_TAG: latest
+          ECR_REGISTRY: "${{ steps.login-ecr.outputs.registry }}"
+          ECR_REPOSITORY: "afinidata-recommender-service"
+          IMAGE_TAG: "latest"
+          AWS_REGION: "{{ secrets.AWS_REGION }}"
 
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -95,6 +96,6 @@ jobs:
           script_stop: true
           script: |
             cd afinidata-analytics
-            aws ecr get-login-password --region "${{ secrets.AWS_REGION }}" | sudo docker login --username AWS --password-stdin "$ECR_REGISTRY"
-            sudo docker pull "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+            aws ecr get-login-password --region $AWS_REGION | sudo docker login --username AWS --password-stdin $ECR_REGISTRY
+            sudo docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
             sudo docker-compose up -d
