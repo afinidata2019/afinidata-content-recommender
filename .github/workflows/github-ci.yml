@@ -59,27 +59,27 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
-    deploy:
-      needs: image
-      name: Deploy newer image to server
-      runs-on: ubuntu-latest
-      steps:
-        - name: Executing SSH commands on server with private key and passphrase
-          uses: appleboy/ssh-action@master
-          env:
-            ECR_REGISTRY: "667131160910.dkr.ecr.us-east-2.amazonaws.com"
-            ECR_REPOSITORY: "afinidata-recommender-service"
-            IMAGE_TAG: "latest"
-          with:
-            host: ${{ secrets.SSH_HOST }}
-            username: ${{ secrets.SSH_USERNAME }}
-            key: ${{ secrets.SSH_KEY }}
-            port: ${{ secrets.SSH_PORT }}
-            passphrase: ${{ secrets.SSH_PASSPHRASE }}
-            envs: ECR_REGISTRY
-            script_stop: true
-            script: |
-              cd afinidata-analytics
-              aws ecr get-login-password --region us-east-2 | sudo docker login --username AWS --password-stdin $ECR_REGISTRY
-              sudo docker pull 667131160910.dkr.ecr.us-east-2.amazonaws.com/afinidata-recommender-service:latest
-              sudo docker-compose up -d
+  deploy:
+    needs: image
+    name: Deploy newer image to server
+    runs-on: ubuntu-latest
+    steps:
+      - name: Executing SSH commands on server with private key and passphrase
+        uses: appleboy/ssh-action@master
+        env:
+          ECR_REGISTRY: "667131160910.dkr.ecr.us-east-2.amazonaws.com"
+          ECR_REPOSITORY: "afinidata-recommender-service"
+          IMAGE_TAG: "latest"
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          envs: ECR_REGISTRY
+          script_stop: true
+          script: |
+            cd afinidata-analytics
+            aws ecr get-login-password --region us-east-2 | sudo docker login --username AWS --password-stdin $ECR_REGISTRY
+            sudo docker pull 667131160910.dkr.ecr.us-east-2.amazonaws.com/afinidata-recommender-service:latest
+            sudo docker-compose up -d
