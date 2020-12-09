@@ -29,15 +29,31 @@ def test_open_rate_recommender_type():
     assert recommender.type == RecommenderType.open_rate
 
 
-def test_open_rate_model_rated_articles_gets_df(populate_db, engine, monkeypatch):
+def test_open_rate_model_rated_articles_gets_df(populate_db, engine):
     recommender = OpenRateBasedRecommender(1)
     rated_articles = recommender.rated_articles(engine)
 
     assert isinstance(rated_articles, DataFrame)
 
 
-def test_rating_model_rated_articles_gets_df(populate_db, engine, monkeypatch):
+def test_rating_model_rated_articles_gets_df(populate_db, engine):
     recommender = RatingBasedRecommender(1)
     rated_articles = recommender.rated_articles(engine)
 
     assert isinstance(rated_articles, DataFrame)
+
+
+def test_rating_model_get_sample(populate_db, engine):
+    recommender = RatingBasedRecommender(1)
+    rated_articles = recommender.rated_articles(engine)
+
+    sample = recommender.sample(rated_articles, 2)
+    assert isinstance(sample, DataFrame)
+
+
+def test_open_rate_model_get_sample(populate_db, engine):
+    recommender = OpenRateBasedRecommender(1)
+    rated_articles = recommender.rated_articles(engine)
+
+    sample = recommender.sample(rated_articles, 2)
+    assert isinstance(sample, DataFrame)
