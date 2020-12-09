@@ -59,7 +59,6 @@ class OpenRateBasedRecommender(object):
             min_metric = df['metric'].max()
             mean_metric = df['metric'].mean()
             df['prob'] = df['metric'].apply(lambda x: np.exp(-(x - mean_metric) / (max_metric - min_metric + epsilon)))
-            weights = 'prob'
 
         if not repeated:
             df = df[~df['is_opened']]
