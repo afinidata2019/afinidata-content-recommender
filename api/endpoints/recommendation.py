@@ -17,6 +17,7 @@ async def get_popularity_recommendation(
         instance_id: int = Path(..., description='Instance `id`'),
         n: int = Query(1, description='Number of articles'),
         type_: RecommenderType = Query(..., alias='type', description='Recommender type'),
+        repeated: bool = Query(False, description='Repeat activities'),
         engine: Engine = Depends(get_engine),
 ):
     recommender_models = {
@@ -28,4 +29,4 @@ async def get_popularity_recommendation(
     recommender = model(instance_id=instance_id)
     articles_df = recommender.rated_articles(engine=engine)
 
-    return recommender.sample(df=articles_df, n=n).to_dict(orient='records')
+    return recommender.sample(df=articles_df, n=n, repeated=repeated).to_dict(orient='records')

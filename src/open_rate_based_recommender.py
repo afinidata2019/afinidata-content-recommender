@@ -62,8 +62,12 @@ class OpenRateBasedRecommender(object):
             weights = 'prob'
 
         if not repeated:
-            df = df[df['is_opened']]
+            df = df[~df['is_opened']]
+
+        if len(df.index) > 0:
+            weights = 'prob'
 
         size = min(n, len(df.index))
 
         return df.sample(n=size, weights=weights)
+
