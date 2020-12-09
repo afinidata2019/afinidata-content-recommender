@@ -7,13 +7,12 @@ on:
     branches: [ master ]
 
 jobs:
-  test-and-release:
+  build-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: Build image
-        run: |
-          make build
+        run: make build
 
       - name: Linting
         run: make lint
@@ -26,3 +25,61 @@ jobs:
           file: ./coverage.xml
           name: codecov-umbrella
           fail_ci_if_error: true
+
+  image:
+    needs: build-test
+    name: Build image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: afinidata-recommender-service
+          IMAGE_TAG: latest
+        run: |
+          # Build a docker container and push it to ECR
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          echo "Pushing image to ECR..."
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+    deploy:
+      needs: image
+      name: Deploy newer image to server
+      runs-on: ubuntu-latest
+      steps:
+        - name: Executing SSH commands on server with private key and passphrase
+          uses: appleboy/ssh-action@master
+          env:
+            ECR_REGISTRY: "667131160910.dkr.ecr.us-east-2.amazonaws.com"
+            ECR_REPOSITORY: "afinidata-recommender-service"
+            IMAGE_TAG: "latest"
+          with:
+            host: ${{ secrets.SSH_HOST }}
+            username: ${{ secrets.SSH_USERNAME }}
+            key: ${{ secrets.SSH_KEY }}
+            port: ${{ secrets.SSH_PORT }}
+            passphrase: ${{ secrets.SSH_PASSPHRASE }}
+            envs: ECR_REGISTRY
+            script_stop: true
+            script: |
+              cd afinidata-analytics
+              aws ecr get-login-password --region us-east-2 | sudo docker login --username AWS --password-stdin $ECR_REGISTRY
+              sudo docker pull 667131160910.dkr.ecr.us-east-2.amazonaws.com/afinidata-recommender-service:latest
+              sudo docker-compose up -d
