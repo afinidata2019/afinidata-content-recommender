@@ -1,5 +1,4 @@
 from pandas import DataFrame
-from sqlalchemy import text
 
 from api.schemas.enums import RecommenderType
 from src import RatingBasedRecommender, OpenRateBasedRecommender

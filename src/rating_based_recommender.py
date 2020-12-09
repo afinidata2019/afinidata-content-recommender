@@ -13,11 +13,11 @@ class RatingBasedRecommender(object):
 
     _sql = """
         WITH articles AS (
-            SELECT * 
-            FROM articles_article 
+            SELECT *
+            FROM articles_article
             WHERE min < 0 AND status='published'
         ), unread_articles AS (
-            SELECT *, 
+            SELECT *,
                 CASE
                     WHEN id IN (
                         SELECT article_id FROM articles_interaction WHERE instance_id=:instance_id AND type='open'
@@ -26,7 +26,7 @@ class RatingBasedRecommender(object):
                 END AS is_opened
             FROM articles
         ), relevant_feedback AS (
-            SELECT * 
+            SELECT *
             FROM articles_articlefeedback
             WHERE article_id IN (SELECT id FROM articles)
         ), ratings AS (
@@ -36,13 +36,13 @@ class RatingBasedRecommender(object):
             FROM relevant_feedback
             GROUP BY article_id
         ), rated_unread AS (
-        SELECT unread_articles.*, 
+        SELECT unread_articles.*,
                IFNULL(ratings.metric, (SELECT AVG(value) FROM relevant_feedback)) AS metric,
                IFNULL(ratings.feedback_count, 0) AS feedback_count
         FROM unread_articles
         LEFT JOIN ratings ON unread_articles.id=ratings.article_id
         )
-        SELECT * 
+        SELECT *
         FROM rated_unread
         ORDER BY metric DESC;
     """

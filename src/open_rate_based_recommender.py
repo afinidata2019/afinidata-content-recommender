@@ -13,31 +13,35 @@ class OpenRateBasedRecommender(object):
 
     _sql = """
         WITH articles AS (
-            SELECT * 
-            FROM articles_article 
+            SELECT *
+            FROM articles_article
             WHERE min < 0 AND status='published'
         ), unread_articles AS (
-            SELECT *, 
+            SELECT *,
                 CASE
-                    WHEN id IN (SELECT article_id FROM articles_interaction WHERE instance_id=:instance_id AND type='open') THEN TRUE
+                    WHEN id IN (
+                        SELECT article_id
+                        FROM articles_interaction
+                        WHERE instance_id=:instance_id AND type='open'
+                    ) THEN TRUE
                     ELSE FALSE
                 END AS is_opened
             FROM articles
         ), relevant_interactions AS (
-            SELECT * 
+            SELECT *
             FROM articles_interaction WHERE type IN ('dispatched', 'open') AND article_id IN (SELECT id FROM articles)
         ), ratios AS (
-            SELECT article_id, 
+            SELECT article_id,
                    SUM(CASE WHEN type='open' THEN 1 ELSE 0 END) / SUM(CASE WHEN type='dispatched' THEN 1 ELSE 0 END) as metric
             FROM relevant_interactions
             GROUP BY article_id
         ), rated_unread AS (
-        SELECT unread_articles.*, 
+        SELECT unread_articles.*,
                IFNULL(ratios.metric, 0) AS metric
         FROM unread_articles
         LEFT JOIN ratios ON unread_articles.id=ratios.article_id
         )
-        SELECT * 
+        SELECT *
         FROM rated_unread
         ORDER BY metric DESC;
     """
@@ -69,4 +73,3 @@ class OpenRateBasedRecommender(object):
         size = min(n, len(df.index))
 
         return df.sample(n=size, weights=weights)
-

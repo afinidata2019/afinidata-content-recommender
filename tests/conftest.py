@@ -75,7 +75,7 @@ def populate_db(setup_database, engine):
                (2,   1,  2, 1, 'draft'),
                (3, -10, -5, 1, 'draft');
     """
-    populate_interaction_table_sql = """  
+    populate_interaction_table_sql = """
         INSERT INTO articles_interaction (id, user_id, type, article_id, instance_id, value)
         VALUES (1, 1, 'dispatched', 1, 1, 0),
                (2, 1, 'open', 1, 1, 0);
