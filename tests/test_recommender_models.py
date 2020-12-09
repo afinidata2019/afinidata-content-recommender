@@ -30,28 +30,14 @@ def test_open_rate_recommender_type():
 
 
 def test_open_rate_model_rated_articles_gets_df(populate_db, engine, monkeypatch):
-    def mock_query(*args, **kwargs):
-        _sql = """
-            SELECT * FROM articles_article;
-        """
-        return text(_sql)
-
     recommender = OpenRateBasedRecommender(1)
-    monkeypatch.setattr(recommender, '_query', mock_query)
     rated_articles = recommender.rated_articles(engine)
 
     assert isinstance(rated_articles, DataFrame)
 
 
 def test_rating_model_rated_articles_gets_df(populate_db, engine, monkeypatch):
-    def mock_query(*args, **kwargs):
-        _sql = """
-            SELECT * FROM articles_article;
-        """
-        return text(_sql)
-
     recommender = RatingBasedRecommender(1)
-    monkeypatch.setattr(recommender, '_query', mock_query)
     rated_articles = recommender.rated_articles(engine)
 
     assert isinstance(rated_articles, DataFrame)
