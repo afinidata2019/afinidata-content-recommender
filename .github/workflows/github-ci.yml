@@ -95,6 +95,6 @@ jobs:
           script_stop: true
           script: |
             cd afinidata-analytics
-            aws ecr get-login-password --region us-east-2 | sudo docker login --username AWS --password-stdin $ECR_REGISTRY
-            sudo docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+            aws ecr get-login-password --region "${{ secrets.AWS_REGION }}" | sudo docker login --username AWS --password-stdin "$ECR_REGISTRY"
+            sudo docker pull "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
             sudo docker-compose up -d
