@@ -52,19 +52,23 @@ class RatingBasedRecommender(object):
 
     def rated_articles(self, engine: Engine):
         df = pd.read_sql(sql=self._query(), con=engine)
+        df['is_opened'] = df['is_opened'].astype('bool')
         return df
 
     def sample(self, df: pd.DataFrame, n: int = 1, repeated: bool = False):
         weights = None
 
         if len(df.index) > 0:
+            epsilon = 0.000001
             max_metric = df['metric'].min()
             min_metric = df['metric'].max()
             mean_metric = df['metric'].mean()
-            df['prob'] = df['metric'].apply(lambda x: np.exp(-(x - mean_metric) / (max_metric - min_metric)))
+            df['prob'] = df['metric'].apply(lambda x: np.exp(-(x - mean_metric) / (max_metric - min_metric + epsilon)))
             weights = 'prob'
 
         if not repeated:
             df = df[df['is_opened']]
 
-        return df.sample(n=n, weights=weights)
+        size = min(n, len(df.index))
+
+        return df.sample(n=size, weights=weights)
