@@ -6,7 +6,7 @@ from sqlalchemy.engine import Engine
 from api import schemas
 from api.core.db import get_engine
 from api.schemas.enums import RecommenderType
-from src import OpenRateBasedRecommender, RatingBasedRecommender
+from src import OpenRateBasedRecommender, RatingBasedRecommender, RandomRecommender
 
 
 router = APIRouter()
@@ -22,7 +22,8 @@ async def get_popularity_recommendation(
 ):
     recommender_models = {
         RecommenderType.rating: RatingBasedRecommender,
-        RecommenderType.open_rate: OpenRateBasedRecommender
+        RecommenderType.open_rate: OpenRateBasedRecommender,
+        RecommenderType.random: RandomRecommender
     }
 
     model = recommender_models[type_]

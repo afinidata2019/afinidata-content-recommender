@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -16,4 +17,4 @@ class Article(BaseModel):
     updated_at: datetime
     status: str
     is_opened: bool
-    metric: float
+    metric: Optional[float]
