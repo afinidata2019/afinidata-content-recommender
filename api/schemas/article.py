@@ -18,3 +18,4 @@ class Article(BaseModel):
     status: str
     is_opened: bool
     metric: Optional[float]
+    in_weeks: bool
