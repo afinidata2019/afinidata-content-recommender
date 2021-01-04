@@ -3,6 +3,7 @@ import pandas as pd
 from sqlalchemy import text
 from sqlalchemy.engine import Engine
 
+from api.custom.exceptions import InvalidInstanceType
 from api.schemas.enums import RecommenderType
 
 
@@ -27,6 +28,11 @@ class OpenRateBasedRecommender(object):
                     ELSE FALSE
                 END AS is_opened
             FROM articles
+        ), pregnancy_data AS (
+            SELECT iav.instance_id, iav.value - FLOOR(DATEDIFF(CURDATE(), iav.created_at)/7) AS weeks
+            FROM instances_attributevalue iav
+            JOIN attributes_attribute aa ON aa.id=iav.attribute_id
+            WHERE aa.name='pregnant_weeks' AND iav.instance_id=:instance_id
         ), relevant_interactions AS (
             SELECT *
             FROM articles_interaction WHERE type IN ('dispatched', 'open') AND article_id IN (SELECT id FROM articles)
@@ -37,9 +43,11 @@ class OpenRateBasedRecommender(object):
             GROUP BY article_id
         ), rated_unread AS (
         SELECT unread_articles.*,
-               IFNULL(ratios.metric, 0) AS metric
+               IFNULL(ratios.metric, 0) AS metric,
+               CASE WHEN pd.weeks > unread_articles.min AND pd.weeks < unread_articles.max THEN TRUE ELSE FALSE END AS in_weeks
         FROM unread_articles
         LEFT JOIN ratios ON unread_articles.id=ratios.article_id
+        LEFT JOIN pregnancy_data pd ON pd.instance_id=:instance_id
         )
         SELECT *
         FROM rated_unread
@@ -52,7 +60,13 @@ class OpenRateBasedRecommender(object):
     def rated_articles(self, engine: Engine):
         df = pd.read_sql(sql=self._query(), con=engine)
         df['is_opened'] = df['is_opened'].astype('bool')
-        return df
+        df['in_weeks'] = df['in_weeks'].astype('bool')
+
+        df_in_weeks = df[df['in_weeks']]
+        if len(df_in_weeks.index) == 0:
+            raise InvalidInstanceType('There are no pregnancy articles for this instance')
+
+        return df_in_weeks
 
     def sample(self, df: pd.DataFrame, n: int = 1, repeated: bool = False):
         weights = None
