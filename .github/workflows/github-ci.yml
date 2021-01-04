@@ -28,7 +28,6 @@ jobs:
           fail_ci_if_error: true
 
   image:
-    needs: build-test
     name: Build image
     runs-on: ubuntu-latest
 
