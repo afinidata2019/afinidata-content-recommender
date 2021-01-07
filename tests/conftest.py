@@ -29,6 +29,8 @@ def setup_database(engine):
     drop_articles_table_sql = "DROP TABLE IF EXISTS articles_article;"
     drop_interaction_table_sql = "DROP TABLE IF EXISTS articles_interaction;"
     drop_articlefeedback_table_sql = "DROP TABLE IF EXISTS articles_articlefeedback;"
+    drop_attributevalue_table_sql = "DROP TABLE IF EXISTS instances_attributevalue;"
+    drop_attribute_table_sql = "DROP TABLE IF EXISTS attributes_attribute;"
 
     create_articles_table_sql = """
         CREATE TABLE articles_article (
@@ -57,21 +59,42 @@ def setup_database(engine):
             user_id int(11) DEFAULT NULL
         );
     """
+    create_attributevalue_table_sql = """
+        CREATE TABLE instances_attributevalue (
+            id int(11) PRIMARY KEY,
+            value TEXT NOT NULL,
+            attribute_id int(11) NOT NULL,
+            instance_id int(11) NOT NULL,
+            created_at datetime(6) NOT NULL
+        );
+    """
+    create_attribute_table_sql = """
+        CREATE TABLE attributes_attribute (
+            id int(11) PRIMARY KEY,
+            name varchar(255) NOT NULL,
+            "type" varchar(20) NOT NULL
+        );
+    """
 
     with engine.connect() as con:
         con.execute(text(drop_articles_table_sql))
         con.execute(text(drop_interaction_table_sql))
         con.execute(text(drop_articlefeedback_table_sql))
+        con.execute(text(drop_attributevalue_table_sql))
+        con.execute(text(drop_attribute_table_sql))
+
         con.execute(text(create_articles_table_sql))
         con.execute(text(create_interaction_table_sql))
         con.execute(text(create_articlefeedback_table_sql))
+        con.execute(text(create_attributevalue_table_sql))
+        con.execute(text(create_attribute_table_sql))
 
 
 @pytest.fixture(scope='session')
 def populate_db(setup_database, engine):
     populate_article_table_sql = """
         INSERT INTO articles_article (id, min, max, user_id, status)
-        VALUES (1, -10,  0, 1, 'published'),
+        VALUES (1, -10,  -1, 1, 'published'),
                (2,   1,  2, 1, 'draft'),
                (3, -10, -5, 1, 'draft');
     """
@@ -85,10 +108,21 @@ def populate_db(setup_database, engine):
         VALUES (1, 5, 1, 1);
     """
 
+    populate_attributevalue_table_sql = """
+        INSERT INTO instances_attributevalue (id, value, attribute_id, instance_id, created_at)
+        VALUES (1, '-5', 1, 1, '2020-01-07');
+    """
+
+    populate_attribute_table_sql = """
+        INSERT INTO attribute_table (id, name, "type")
+        VALUES (1, 'pregnant_weeks', 'numeric');
+    """
     with engine.connect() as con:
         con.execute(text(populate_article_table_sql))
         con.execute(text(populate_interaction_table_sql))
         con.execute(text(populate_articlefeedback_table_sql))
+        con.execute(text(populate_attributevalue_table_sql))
+        con.execute(text(populate_attribute_table_sql))
 
 
 @pytest.fixture(scope='module')
