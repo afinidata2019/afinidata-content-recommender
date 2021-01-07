@@ -40,6 +40,28 @@ def test_random_recommender_type():
     assert recommender.type == RecommenderType.random
 
 
+def test_feedback_sample(articles_df):
+    recommender = RatingBasedRecommender(1)
+
+    sample_df = recommender.sample(df=articles_df, n=1, repeated=False)
+    assert isinstance(sample_df, DataFrame)
+
+
+def test_random_sample(articles_df):
+    recommender = RandomRecommender(1)
+
+    sample_df = recommender.sample(df=articles_df, n=1, repeated=False)
+    assert isinstance(sample_df, DataFrame)
+
+
+def test_open_rate_sample(articles_df):
+    recommender = OpenRateBasedRecommender(1)
+
+    sample_df = recommender.sample(df=articles_df, n=1, repeated=False)
+    assert isinstance(sample_df, DataFrame)
+
+
+
 """
 def test_open_rate_model_rated_articles_gets_df(populate_db, engine):
     recommender = OpenRateBasedRecommender(1)
