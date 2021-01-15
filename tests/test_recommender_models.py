@@ -1,7 +1,7 @@
 from pandas import DataFrame
 
 from api.schemas.enums import RecommenderType
-from src import RatingBasedRecommender, OpenRateBasedRecommender, RandomRecommender
+from src import RatingBasedRecommender, OpenRateBasedRecommender, BaseRecommender
 
 
 def test_setting_instance_id_open_rate_recommender():
@@ -17,7 +17,7 @@ def test_setting_instance_id_rating_recommender():
 
 
 def test_setting_instance_id_random_recommender():
-    recommender = RandomRecommender(1)
+    recommender = BaseRecommender(1)
 
     assert recommender.instance_id == 1
 
@@ -35,7 +35,7 @@ def test_open_rate_recommender_type():
 
 
 def test_random_recommender_type():
-    recommender = RandomRecommender(1)
+    recommender = BaseRecommender(1)
 
     assert recommender.type == RecommenderType.random
 
@@ -48,7 +48,7 @@ def test_feedback_sample(articles_df):
 
 
 def test_random_sample(articles_df):
-    recommender = RandomRecommender(1)
+    recommender = BaseRecommender(1)
 
     sample_df = recommender.sample(df=articles_df, n=1, repeated=False)
     assert isinstance(sample_df, DataFrame)
