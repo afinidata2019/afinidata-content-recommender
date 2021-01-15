@@ -62,10 +62,10 @@ class BaseRecommender(object):
             raise InvalidInstanceType('There are no pregnancy articles for this instance')
 
         if include_only_type is not None:
-            df = df[df['type'] in include_only_type]
+            df = df[df['type'].isin(include_only_type)]
 
         if exclude_type is not None:
-            df = df[df['type'] not in exclude_type]
+            df = df[~df['type'].isin(exclude_type)]
 
         return df
 
