@@ -49,8 +49,10 @@ class BaseRecommender(object):
 
     def rated_articles(
             self,
-            engine: Engine
-        ):
+            engine: Engine,
+            include_only_type: List[str] = None,
+            exclude_type: List[str] = None,
+    ):
         df = pd.read_sql(sql=self._query(), con=engine)
         df['is_opened'] = df['is_opened'].astype('bool')
         df['in_weeks'] = df['in_weeks'].astype('bool')
@@ -58,6 +60,12 @@ class BaseRecommender(object):
         df = df[df['in_weeks']]
         if len(df.index) == 0:
             raise InvalidInstanceType('There are no pregnancy articles for this instance')
+
+        if include_only_type is not None:
+            df = df[df['type'] in include_only_type]
+
+        if exclude_type is not None:
+            df = df[df['type'] not in exclude_type]
 
         return df
 

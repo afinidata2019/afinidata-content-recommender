@@ -7,7 +7,7 @@ from api import schemas
 from api.core.db import get_engine
 from api.custom.exceptions import InvalidInstanceType
 from api.schemas.enums import RecommenderType
-from src import OpenRateBasedRecommender, RatingBasedRecommender, RandomRecommender
+from src import BaseRecommender, OpenRateBasedRecommender, RatingBasedRecommender
 
 
 router = APIRouter()
@@ -19,12 +19,14 @@ async def get_popularity_recommendation(
         n: int = Query(1, description='Number of articles'),
         type_: RecommenderType = Query(..., alias='type', description='Recommender type'),
         repeated: bool = Query(False, description='Repeat activities'),
+        include_only_type: List[str] = Query(None, description='Include only articles of these types'),
+        exclude_type: List[str] = Query(None, description='Exclude articles of these types'),
         engine: Engine = Depends(get_engine),
 ):
     recommender_models = {
         RecommenderType.rating: RatingBasedRecommender,
         RecommenderType.open_rate: OpenRateBasedRecommender,
-        RecommenderType.random: RandomRecommender
+        RecommenderType.random: BaseRecommender
     }
 
     model = recommender_models[type_]
@@ -34,4 +36,12 @@ async def get_popularity_recommendation(
     except InvalidInstanceType as e:
         raise HTTPException(status_code=422, detail=e.message)
 
-    return recommender.sample(df=articles_df, n=n, repeated=repeated).to_dict(orient='records')
+    filtered_df = recommender.sample(
+        df=articles_df,
+        n=n,
+        repeated=repeated,
+        include_only_type=include_only_type,
+        exclude_type=exclude_type
+    )
+
+    return filtered_df.to_dict(orient='records')
