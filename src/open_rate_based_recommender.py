@@ -1,16 +1,12 @@
 import numpy as np
 import pandas as pd
-from sqlalchemy import text
-from sqlalchemy.engine import Engine
 
-from api.custom.exceptions import InvalidInstanceType
 from api.schemas.enums import RecommenderType
+from src.base_recommender import BaseRecommender
 
 
-class OpenRateBasedRecommender(object):
-    def __init__(self, instance_id: int):
-        self.instance_id = instance_id
-        self.type = RecommenderType.open_rate
+class OpenRateBasedRecommender(BaseRecommender):
+    type = RecommenderType.open_rate
 
     _sql = """
         WITH articles AS (
@@ -54,20 +50,6 @@ class OpenRateBasedRecommender(object):
         FROM rated_unread
         ORDER BY metric DESC;
     """
-
-    def _query(self):
-        return text(self._sql).bindparams(instance_id=self.instance_id)
-
-    def rated_articles(self, engine: Engine):
-        df = pd.read_sql(sql=self._query(), con=engine)
-        df['is_opened'] = df['is_opened'].astype('bool')
-        df['in_weeks'] = df['in_weeks'].astype('bool')
-
-        df_in_weeks = df[df['in_weeks']]
-        if len(df_in_weeks.index) == 0:
-            raise InvalidInstanceType('There are no pregnancy articles for this instance')
-
-        return df_in_weeks
 
     def sample(self, df: pd.DataFrame, n: int = 1, repeated: bool = False):
         weights = None

@@ -1,3 +1,3 @@
+from src.base_recommender import BaseRecommender
 from src.rating_based_recommender import RatingBasedRecommender
 from src.open_rate_based_recommender import OpenRateBasedRecommender
-from src.random_recommender import RandomRecommender

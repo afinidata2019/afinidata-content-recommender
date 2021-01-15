@@ -1,4 +1,5 @@
-import numpy as np
+from typing import List
+
 import pandas as pd
 from sqlalchemy import text
 from sqlalchemy.engine import Engine
@@ -7,10 +8,11 @@ from api.custom.exceptions import InvalidInstanceType
 from api.schemas.enums import RecommenderType
 
 
-class RandomRecommender(object):
+class BaseRecommender(object):
+    type = RecommenderType.random
+
     def __init__(self, instance_id: int):
         self.instance_id = instance_id
-        self.type = RecommenderType.random
 
     _sql = """
         WITH articles AS (
@@ -45,16 +47,19 @@ class RandomRecommender(object):
     def _query(self):
         return text(self._sql).bindparams(instance_id=self.instance_id)
 
-    def rated_articles(self, engine: Engine):
+    def rated_articles(
+            self,
+            engine: Engine
+        ):
         df = pd.read_sql(sql=self._query(), con=engine)
         df['is_opened'] = df['is_opened'].astype('bool')
         df['in_weeks'] = df['in_weeks'].astype('bool')
 
-        df_in_weeks = df[df['in_weeks']]
-        if len(df_in_weeks.index) == 0:
+        df = df[df['in_weeks']]
+        if len(df.index) == 0:
             raise InvalidInstanceType('There are no pregnancy articles for this instance')
 
-        return df_in_weeks
+        return df
 
     def sample(self, df: pd.DataFrame, n: int = 1, repeated: bool = False):
         if not repeated:
