@@ -32,7 +32,11 @@ async def get_popularity_recommendation(
     model = recommender_models[type_]
     recommender = model(instance_id=instance_id)
     try:
-        articles_df = recommender.rated_articles(engine=engine)
+        articles_df = recommender.rated_articles(
+            engine=engine,
+            include_only_type=include_only_type,
+            exclude_type=exclude_type
+        )
     except InvalidInstanceType as e:
         raise HTTPException(status_code=422, detail=e.message)
 
@@ -40,8 +44,6 @@ async def get_popularity_recommendation(
         df=articles_df,
         n=n,
         repeated=repeated,
-        include_only_type=include_only_type,
-        exclude_type=exclude_type
     )
 
     return filtered_df.to_dict(orient='records')
