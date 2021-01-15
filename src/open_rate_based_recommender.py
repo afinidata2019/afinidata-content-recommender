@@ -14,8 +14,9 @@ class OpenRateBasedRecommender(object):
 
     _sql = """
         WITH articles AS (
-            SELECT *
-            FROM articles_article
+            SELECT aa.*, usst.name AS type
+            FROM articles_article aa
+            JOIN user_sessions_sessiontype usst ON usst.id=aa.type_id
             WHERE min < 0 AND status='published'
         ), unread_articles AS (
             SELECT *,
