@@ -16,6 +16,7 @@ class Article(BaseModel):
     created_at: datetime
     updated_at: datetime
     status: str
+    type: Optional[str]
     is_opened: bool
     metric: Optional[float]
     in_weeks: bool
